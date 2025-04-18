@@ -1,0 +1,128 @@
+name: 'Laravel CI/CD'
+description: 'A GitHub Action to run Laravel CI/CD and code cleanup tasks'
+author: 'Basant Singh Dobal (sbasant12345@gmail.com)'
+inputs:
+  job:
+    description: 'The job type to run (ci, cd, code_cleanup)'
+    required: true
+  vps_private_key:
+    description: 'The private key for VPS'
+    required: false
+    default: ''
+  vps_username:
+    description: 'The username for VPS'
+    required: false
+    default: ''
+  vps_host:
+    description: 'The host for VPS'
+    required: false
+    default: ''
+  deploy_path:
+    description: 'The deployment path on VPS'
+    required: false
+    default: ''
+  production_branch:
+    description: 'The production branch to deploy'
+    required: true
+  php_version:
+    description: 'The PHP version to use'
+    required: true
+  github_token:
+    description: 'GitHub token to create issues'
+    required: true
+  repo:
+    description: 'GitHub repository in owner/repo format'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php_version }}
+        tools: composer
+
+    - run: |
+        set -e
+
+        create_github_issue() {
+          local message=$1
+          curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/repos/$REPO/issues \
+               -d "{\"title\":\"CI/CD Action Failed\",\"body\":\"$message\"}"
+        }
+
+        capture_errors() {
+          local job=$1
+          local output_file=$2
+          if [ -f "$output_file" ]; then
+            local error_message=$(cat "$output_file")
+            create_github_issue "Job: $job failed.\n\nError Details:\n$error_message"
+          else
+            create_github_issue "Job: $job failed.\n\nCheck the logs for details."
+          fi
+        }
+
+        job=${{ inputs.job }}
+        output_file="error_output.txt"
+
+        trap 'capture_errors "$job" "$output_file"' ERR
+
+        if [ "$job" == "ci" ]; then
+          # CI steps
+          echo "Running CI steps..."
+          cp .env.example .env
+          composer install --prefer-dist --no-progress --no-interaction
+          php artisan key:generate
+
+        elif [ "$job" == "cd" ]; then
+          # CD steps
+          echo "Running CD steps..."
+          ssh -o StrictHostKeyChecking=no -i $VPS_PRIVATE_KEY $VPS_USERNAME@$VPS_HOST \
+          "cd $DEPLOY_PATH && \
+          sudo chown -R $USER:www-data storage/ bootstrap/cache public/ && \
+          sudo chmod -R 775 storage bootstrap/cache public/ && \
+          git reset --hard && \
+          git clean -fd && \
+          git pull origin $PRODUCTION_BRANCH && \
+          /usr/bin/php$PHP_VERSION $(which composer) install --no-dev --prefer-dist --optimize-autoloader && \
+          /usr/bin/php$PHP_VERSION artisan optimize && \
+          /usr/bin/php$PHP_VERSION artisan optimize:clear && \
+          /usr/bin/php$PHP_VERSION artisan storage:link" 2>&1 | tee "$output_file" || exit 1
+
+        elif [ "$job" == "code_cleanup" ]; then
+          # Code Cleanup steps
+          echo "Running code cleanup steps..."
+          composer install --prefer-dist --no-progress --no-interaction
+          composer require --dev laravel/pint
+          composer require --dev squizlabs/php_codesniffer
+          npm install
+          ./vendor/bin/pint || vendor/bin/pint
+          ./vendor/bin/phpcs --standard=PSR12 app/ routes/ tests/ resources/ || vendor/bin/phpcs --standard=PSR12 app/ routes/ tests/ resources/
+          npx eslint resources/**/*.js
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Apply code style fixes" || echo "No changes to commit"
+        else
+          echo "Invalid job"
+          exit 1
+        fi
+      shell: bash
+      env:
+        JOB: ${{ inputs.job }}
+        VPS_PRIVATE_KEY: ${{ inputs.vps_private_key }}
+        VPS_USERNAME: ${{ inputs.vps_username }}
+        VPS_HOST: ${{ inputs.vps_host }}
+        DEPLOY_PATH: ${{ inputs.deploy_path }}
+        PRODUCTION_BRANCH: ${{ inputs.production_branch }}
+        PHP_VERSION: ${{ inputs.php_version }}  # Use dynamic PHP version
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        REPO: ${{ inputs.repo }}
+branding:
+  icon: 'terminal'
+  color: 'blue'
