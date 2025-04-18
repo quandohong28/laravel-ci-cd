@@ -84,13 +84,12 @@ runs:
           echo "Running CD steps..."
           mkdir -p ~/.ssh
           echo "${VPS_PRIVATE_KEY}" > ~/.ssh/id_rsa
-          cat ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           touch ~/.ssh/known_hosts
           ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
           SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
-          $SSH_CMD $USER@$VPS_HOST "cd $DEPLOY_PATH && \
-            sudo chown -R $USER:www-data storage/ bootstrap/cache public/ && \
+          $SSH_CMD $VPS_USERNAME@$VPS_HOST "cd $DEPLOY_PATH && \
+            sudo chown -R $VPS_USERNAME:www-data storage/ bootstrap/cache public/ && \
             sudo chmod -R 775 storage bootstrap/cache public/ && \
             git reset --hard && \
             git clean -fd && \
