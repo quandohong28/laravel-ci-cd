@@ -51,9 +51,9 @@ runs:
         create_github_issue() {
           local message=$1
           curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/repos/$REPO/issues \
-               -d "{\"title\":\"CI/CD Action Failed\",\"body\":\"$message\"}"
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/$REPO/issues \
+              -d "{\"title\":\"CI/CD Action Failed\",\"body\":\"$message\"}"
         }
 
         capture_errors() {
