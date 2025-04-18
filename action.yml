@@ -95,7 +95,7 @@ runs:
           /usr/bin/php$PHP_VERSION $(which composer) install --no-dev --prefer-dist --optimize-autoloader && \
           /usr/bin/php$PHP_VERSION artisan optimize && \
           /usr/bin/php$PHP_VERSION artisan optimize:clear && \
-          /usr/bin/php$PHP_VERSION artisan storage:link" 2>&1 | tee "$output_file" || exit 1
+          /usr/bin/php$PHP_VERSION artisan storage:link 2>&1 | tee "$output_file" || exit 1
 
         elif [ "$job" == "code_cleanup" ]; then
           # Code Cleanup steps
