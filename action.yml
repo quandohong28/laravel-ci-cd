@@ -17,6 +17,10 @@ inputs:
     description: 'The host for VPS'
     required: false
     default: ''
+  vps_port:
+    description: 'The port for VPS'
+    required: false
+    default: ''
   deploy_path:
     description: 'The deployment path on VPS'
     required: false
