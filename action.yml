@@ -84,6 +84,7 @@ runs:
           echo "Running CD steps..."
           mkdir -p ~/.ssh
           echo "${VPS_PRIVATE_KEY}" > ~/.ssh/id_rsa
+          cat ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           touch ~/.ssh/known_hosts
           ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
