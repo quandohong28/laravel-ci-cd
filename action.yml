@@ -88,8 +88,7 @@ runs:
           echo "Running CD steps..."
           mkdir -p ~/.ssh
           touch ~/.ssh/known_hosts
-          ssh-keyscan -p $VPS_PORT $VPS_HOST >> ~/.ssh/known_hosts
-          if [ -n "$VPS_PORT" ]; then
+          if [[ "$VPS_PORT" =~ ^[0-9]+$ ]]; then
             ssh-keyscan -p $VPS_PORT $VPS_HOST >> ~/.ssh/known_hosts
             SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p $VPS_PORT"
           else
