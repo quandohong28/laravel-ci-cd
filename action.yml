@@ -86,16 +86,16 @@ runs:
           touch ~/.ssh/known_hosts
           ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
           SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
-          cd $DEPLOY_PATH && \
-          sudo chown -R $USER:www-data storage/ bootstrap/cache public/ && \
-          sudo chmod -R 775 storage bootstrap/cache public/ && \
-          git reset --hard && \
-          git clean -fd && \
-          git pull origin $PRODUCTION_BRANCH && \
-          /usr/bin/php$PHP_VERSION $(which composer) install --no-dev --prefer-dist --optimize-autoloader && \
-          /usr/bin/php$PHP_VERSION artisan optimize && \
-          /usr/bin/php$PHP_VERSION artisan optimize:clear && \
-          /usr/bin/php$PHP_VERSION artisan storage:link 2>&1 | tee "$output_file" || exit 1
+          $SSH_CMD $USER@$VPS_HOST "cd $DEPLOY_PATH && \
+            sudo chown -R $USER:www-data storage/ bootstrap/cache public/ && \
+            sudo chmod -R 775 storage bootstrap/cache public/ && \
+            git reset --hard && \
+            git clean -fd && \
+            git pull origin $PRODUCTION_BRANCH && \
+            /usr/bin/php$PHP_VERSION $(which composer) install --no-dev --prefer-dist --optimize-autoloader && \
+            /usr/bin/php$PHP_VERSION artisan optimize && \
+            /usr/bin/php$PHP_VERSION artisan optimize:clear && \
+            /usr/bin/php$PHP_VERSION artisan storage:link" 2>&1 | tee "$output_file" || exit 1
 
         elif [ "$job" == "code_cleanup" ]; then
           # Code Cleanup steps
