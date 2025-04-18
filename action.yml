@@ -86,7 +86,7 @@ runs:
           touch ~/.ssh/known_hosts
           ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
           SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
-          "cd $DEPLOY_PATH && \
+          cd $DEPLOY_PATH && \
           sudo chown -R $USER:www-data storage/ bootstrap/cache public/ && \
           sudo chmod -R 775 storage bootstrap/cache public/ && \
           git reset --hard && \
