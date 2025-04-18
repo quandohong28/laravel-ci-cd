@@ -86,7 +86,13 @@ runs:
         elif [ "$job" == "cd" ]; then
           # CD steps
           echo "Running CD steps..."
-          ssh -o StrictHostKeyChecking=no -i $VPS_PRIVATE_KEY $VPS_USERNAME@$VPS_HOST \
+          if [ -n "$VPS_PORT" ]; then
+            ssh-keyscan -p $VPS_PORT $VPS_HOST >> ~/.ssh/known_hosts
+            SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p $VPS_PORT"
+          else
+            ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
+            SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
+          fi
           "cd $DEPLOY_PATH && \
           sudo chown -R $USER:www-data storage/ bootstrap/cache public/ && \
           sudo chmod -R 775 storage bootstrap/cache public/ && \
