@@ -1,6 +1,6 @@
 name: 'Laravel CI/CD'
 description: 'A GitHub Action to run Laravel CI/CD and code cleanup tasks'
-author: 'Basant Singh Dobal (sbasant12345@gmail.com)'
+author: 'quandohong28'
 inputs:
   job:
     description: 'The job type to run (ci, cd, code_cleanup)'
