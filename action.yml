@@ -17,6 +17,10 @@ inputs:
     description: 'The host for VPS'
     required: false
     default: ''
+  vps_port:
+    description: 'The port for VPS'
+    required: false
+    default: ''
   deploy_path:
     description: 'The deployment path on VPS'
     required: false
@@ -87,7 +91,7 @@ runs:
           chmod 600 ~/.ssh/id_rsa
           touch ~/.ssh/known_hosts
           ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
-          SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
+          SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p $VPS_PORT"
           $SSH_CMD $VPS_USERNAME@$VPS_HOST "cd $DEPLOY_PATH && \
             sudo chown -R $VPS_USERNAME:www-data storage/ bootstrap/cache public/ && \
             sudo chmod -R 775 storage bootstrap/cache public/ && \
@@ -123,6 +127,7 @@ runs:
         VPS_PRIVATE_KEY: ${{ inputs.vps_private_key }}
         VPS_USERNAME: ${{ inputs.vps_username }}
         VPS_HOST: ${{ inputs.vps_host }}
+        VPS_PORT: ${{ inputs.vps_port }}
         DEPLOY_PATH: ${{ inputs.deploy_path }}
         PRODUCTION_BRANCH: ${{ inputs.production_branch }}
         PHP_VERSION: ${{ inputs.php_version }}  # Use dynamic PHP version
