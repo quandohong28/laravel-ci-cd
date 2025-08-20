@@ -90,6 +90,7 @@ runs:
           echo "${VPS_PRIVATE_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           touch ~/.ssh/known_hosts
+          echo "Using SSH port: $VPS_PORT"
           ssh-keyscan -p $VPS_PORT $VPS_HOST >> ~/.ssh/known_hosts
           SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p $VPS_PORT"
           $SSH_CMD $VPS_USERNAME@$VPS_HOST "cd $DEPLOY_PATH && \
